@@ -76,6 +76,9 @@ ngshare:
   # Additional cmdline arguments for advanced configuration
   args: []
 
+  #database url
+  database: ""
+
 # PVC Storage to allocate to ngshare
 pvc:
   # Amount of storage to allocate

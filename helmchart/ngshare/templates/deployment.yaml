@@ -51,6 +51,10 @@ spec:
           resources:
             {{- toYaml .Values.deployment.resources | nindent 12 }}
           args:
+            {{- if ne .Values.ngshare.database "" }}
+            - "--database"
+            - {{ .Values.ngshare.database }}
+            {{- end -}}
             {{- if .Values.ngshare.debug }}
             - "--debug"
             {{- end -}}
