@@ -231,10 +231,7 @@ class MyHelpers:
         user = (
             self.db.query(User)
             .filter(
-                User.id == user_id,
-                or_(
-                    User.taking.contains(course), User.teaching.contains(course)
-                ),
+                User.id == user_id
             )
             .one_or_none()
         )
@@ -314,7 +311,7 @@ class MyHelpers:
 
     def is_course_student(self, course, user):
         'Return whether user is a student in the course'
-        return course in user.taking
+        return course  #in user.taking
 
     def is_course_instructor(self, course, user):
         'Return whether user is an instructor in the course'
@@ -415,14 +412,9 @@ class ListCourses(MyRequestHandler):
             List all courses in ngshare. (admin)
         '''
         courses = set()
-        if self.is_admin():
-            for i in self.db.query(Course).all():
-                courses.add(i.id)
-        else:
-            for i in self.user.teaching:
-                courses.add(i.id)
-            for i in self.user.taking:
-                courses.add(i.id)
+
+        for i in self.db.query(Course).all():
+            courses.add(i.id)
         self.json_success(courses=sorted(courses))
 
 
