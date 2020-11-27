@@ -105,7 +105,11 @@ spec:
       volumes:
         - name: ngshare-pvc
           persistentVolumeClaim:
+            {{- if .Values.pvc.claimName }}
+            claimName: {{ .Values.pvc.claimName }}
+            {{ else }}
             claimName: {{ include "ngshare.name" . }}-pvc
+            {{- end }}
       {{- with .Values.deployment.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

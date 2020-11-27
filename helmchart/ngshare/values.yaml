@@ -82,6 +82,7 @@ ngshare:
 # PVC Storage to allocate to ngshare
 pvc:
   # Amount of storage to allocate
+  claimName: ""
   storage: 1Gi
 
   # Additional configs if you have custom needs like specifying a storageclass
