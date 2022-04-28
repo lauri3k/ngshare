@@ -43,5 +43,8 @@ setuptools.setup(
         'alembic>=1.3.2',
         'tornado>=6.0.3',
         'jupyterhub>=1.1.0',
+        'sqlalchemy-utils',
+        'psycopg2-binary'
+
     ],
 )

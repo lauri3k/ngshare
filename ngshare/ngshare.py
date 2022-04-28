@@ -25,6 +25,7 @@ from tornado.web import (
 from jupyterhub.services.auth import HubAuthenticated
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy_utils import database_exists, create_database
 
 try:
     from . import dbutil
@@ -227,14 +228,7 @@ class MyHelpers:
 
     def find_course_user(self, course, user_id):
         "Return a student or instructor as User object from course and id"
-        user = (
-            self.db.query(User)
-            .filter(
-                User.id == user_id,
-                or_(User.taking.contains(course), User.teaching.contains(course)),
-            )
-            .one_or_none()
-        )
+        user = self.db.query(User).filter(User.id == user_id).one_or_none()
         if user is None:
             self.json_error(404, "Student not found")
         return user
@@ -311,7 +305,7 @@ class MyHelpers:
 
     def is_course_student(self, course, user):
         "Return whether user is a student in the course"
-        return course in user.taking
+        return course  # in user.taking
 
     def is_course_instructor(self, course, user):
         "Return whether user is an instructor in the course"
@@ -410,14 +404,9 @@ class ListCourses(MyRequestHandler):
         List all courses in ngshare. (admin)
         """
         courses = set()
-        if self.is_admin():
-            for i in self.db.query(Course).all():
-                courses.add(i.id)
-        else:
-            for i in self.user.teaching:
-                courses.add(i.id)
-            for i in self.user.taking:
-                courses.add(i.id)
+
+        for i in self.db.query(Course).all():
+            courses.add(i.id)
         self.json_success(courses=sorted(courses))
 
 
@@ -797,12 +786,15 @@ class UploadDownloadFeedback(MyRequestHandler):
         except MissingArgumentError:
             self.json_error(400, "Please supply timestamp")
         submission = self.find_student_submission(assignment, student, timestamp)
-        feedback_files = [f.dump() for f in submission.feedbacks]
         for file_obj in submission.feedbacks:
             file_obj.delete(self.db)
+            filename = f"{self.application.storage_path}{file_obj.actual_name}"
+            print(f"Deleting file: {filename}")
+            if os.path.exists(filename):
+                os.remove(filename)
+            else:
+                print("File not found!")
         submission.feedbacks.clear()
-        for f in feedback_files:
-            print(f"{self.application.storage_path}/{f['filename']}")
         files = self.get_body_argument("files", None)
         self.json_files_unpack(files, submission.feedbacks)
         self.db.commit()
@@ -934,6 +926,8 @@ class MyApplication(Application):
         )
         # Connect Database
         engine = create_engine(db_url)
+        if not database_exists(engine.url):
+            create_database(engine.url)
         Base.metadata.bind = engine
         Base.metadata.create_all(engine)
         self.db_session = sessionmaker(bind=engine)
@@ -964,6 +958,7 @@ def main(argv=None):  # pragma: no cover
     parser = argparse.ArgumentParser(
         description="ngshare, a REST API nbgrader exchange"
     )
+    parser.add_argument("--jupyterhub_api_url", help="override $JUPYTERHUB_API_URL")
     parser.add_argument(
         "--vngshare",
         help="Use vngshare (stand-alone mode)",
