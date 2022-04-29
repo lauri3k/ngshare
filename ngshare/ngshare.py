@@ -793,7 +793,7 @@ class UploadDownloadFeedback(MyRequestHandler):
             if os.path.exists(filename):
                 os.remove(filename)
             # else:
-            #    print("File not found!")
+            #     print("File not found!")
         submission.feedbacks.clear()
         files = self.get_body_argument("files", None)
         self.json_files_unpack(files, submission.feedbacks)
@@ -958,7 +958,6 @@ def main(argv=None):  # pragma: no cover
     parser = argparse.ArgumentParser(
         description="ngshare, a REST API nbgrader exchange"
     )
-    parser.add_argument("--jupyterhub_api_url", help="override $JUPYTERHUB_API_URL")
     parser.add_argument(
         "--vngshare",
         help="Use vngshare (stand-alone mode)",
