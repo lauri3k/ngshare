@@ -789,11 +789,11 @@ class UploadDownloadFeedback(MyRequestHandler):
         for file_obj in submission.feedbacks:
             file_obj.delete(self.db)
             filename = f"{self.application.storage_path}{file_obj.actual_name}"
-            print(f"Deleting file: {filename}")
+            # print(f"Deleting file: {filename}")
             if os.path.exists(filename):
                 os.remove(filename)
-            else:
-                print("File not found!")
+            # else:
+            #     print("File not found!")
         submission.feedbacks.clear()
         files = self.get_body_argument("files", None)
         self.json_files_unpack(files, submission.feedbacks)
