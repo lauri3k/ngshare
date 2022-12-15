@@ -60,6 +60,23 @@ def app():
             )
     # Mock authentication using vngshare
     MyRequestHandler.__bases__ = (MockAuth, RequestHandler, MyHelpers)
+    db_name = tempfile.mktemp('.db')
+    storage_name = tempfile.mktemp('-ngshare-test-dir')
+    # set necessary environment variables
+    os.environ["JUPYTERHUB_API_URL"] = "http://hub.api"
+    os.environ["JUPYTERHUB_API_TOKEN"] = "token"
+    os.environ["JUPYTERHUB_CLIENT_ID"] = "ngshare-client"
+    os.environ["JUPYTERHUB_SERVICE_PREFIX"] = "service/prefix/"
+    application = MyApplication(
+        '/api/',
+        'sqlite:///' + db_name,
+        storage_name,
+        admin=['root'],
+        debug=True,
+    )
+    # Monkey patch auth methods
+    MyRequestHandler.get_current_token = MockAuth.get_current_token
+    MyRequestHandler.user_for_token = MockAuth.user_for_token
     return application
 
 
@@ -1269,7 +1286,7 @@ def test_corner_case(http_client, base_url):
     def mock_filename_create(self, filename):
         nonlocal counter
         counter += 1
-        return str(counter ** 2 % 10) + '.tmp'
+        return str(counter**2 % 10) + '.tmp'
 
     MyHelpers.filename_create = mock_filename_create
     for i in range(100):
