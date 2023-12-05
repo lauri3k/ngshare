@@ -79,42 +79,42 @@ class JupyterHubLoginHandler(RequestHandler):
         Complete OAuth by requesting an access token for an oauth code
         """
         params = dict(
-            client_id=self.settings['client_id'],
-            client_secret=self.settings['api_token'],
-            grant_type='authorization_code',
+            client_id=self.settings["client_id"],
+            client_secret=self.settings["api_token"],
+            grant_type="authorization_code",
             code=code,
-            redirect_uri=self.settings['redirect_uri'],
+            redirect_uri=self.settings["redirect_uri"],
         )
         req = HTTPRequest(
-            self.settings['token_url'],
-            method='POST',
-            body=urlencode(params).encode('utf8'),
-            headers={'Content-Type': 'application/x-www-form-urlencoded'},
+            self.settings["token_url"],
+            method="POST",
+            body=urlencode(params).encode("utf8"),
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
         response = await AsyncHTTPClient().fetch(req)
-        data = json.loads(response.body.decode('utf8', 'replace'))
-        return data['access_token']
+        data = json.loads(response.body.decode("utf8", "replace"))
+        return data["access_token"]
 
     async def get(self):
-        code = self.get_argument('code', None)
+        code = self.get_argument("code", None)
         if code:
             # code is set, we are the oauth callback
             # complete oauth
             token = await self.token_for_code(code)
             # login successful, set cookie and redirect back to home
-            self.set_secure_cookie('ngshare-oauth-token', token)
-            self.redirect('/services/ngshare/')
+            self.set_secure_cookie("ngshare-oauth-token", token)
+            self.redirect("/services/ngshare/")
         else:
             # we are the login handler,
             # begin oauth process which will come back later with an
             # authorization_code
             self.redirect(
                 url_concat(
-                    self.settings['authorize_url'],
+                    self.settings["authorize_url"],
                     dict(
-                        redirect_uri=self.settings['redirect_uri'],
-                        client_id=self.settings['client_id'],
-                        response_type='code',
+                        redirect_uri=self.settings["redirect_uri"],
+                        client_id=self.settings["client_id"],
+                        response_type="code",
                     ),
                 )
             )
@@ -359,15 +359,23 @@ class MyHelpers:
 
     def is_admin(self):
         "Return whether user is admin user"
-        return self.user.id in self.application.admin
+        jh_user = self.get_current_user()
+        return (
+            self.user.id in self.application.admin or jh_user and jh_user.get("admin")
+        )
 
     def is_course_student(self, course, user):
         "Return whether user is a student in the course"
-        return course  # in user.taking
+        return True  # course in user.taking
 
     def is_course_instructor(self, course, user):
         "Return whether user is an instructor in the course"
-        return course in user.teaching
+        jh_user = self.get_current_user()
+        return (
+            course in user.teaching
+            or jh_user
+            and "instructors" in jh_user.get("groups", "")
+        )
 
     def check_admin(self):
         "Assert user is admin user"
@@ -399,7 +407,7 @@ class MyHelpers:
 
 
 class MyRequestHandler(HubOAuthenticated, RequestHandler, MyHelpers):
-    'Custom request handler for ngshare'
+    "Custom request handler for ngshare"
 
     def json_success(self, msg=None, **kwargs):
         "Return success as a JSON object"
@@ -417,7 +425,7 @@ class MyRequestHandler(HubOAuthenticated, RequestHandler, MyHelpers):
 
     def prepare(self):
         "Provide a db object"
-        'Runs before web requests, initializes user and db session'
+        "Runs before web requests, initializes user and db session"
         self.db = self.application.db_session()
 
         self.auth_token = self.get_current_token()
@@ -442,21 +450,21 @@ class MyRequestHandler(HubOAuthenticated, RequestHandler, MyHelpers):
             return self.user_for_token(self.auth_token)
 
     def get_current_token(self):
-        'Gets token from either the headers, if provided, or from a cookie that should have been set earlier.'
+        "Gets token from either the headers, if provided, or from a cookie that should have been set earlier."
         if "Authorization" in self.request.headers:
-            return self.request.headers.get('Authorization')[6:]
+            return self.request.headers.get("Authorization")[6:]
         else:
             # The login handler stored a JupyterHub API token in a cookie
-            token = self.get_secure_cookie('ngshare-oauth-token')
+            token = self.get_secure_cookie("ngshare-oauth-token")
             if token:
                 # secure cookies are bytes, decode to str
-                return token.decode('ascii', 'replace')
+                return token.decode("ascii", "replace")
 
     def user_for_token(self, token):
-        'Retrieve the user for a given token, via /hub/api/user'
+        "Retrieve the user for a given token, via /hub/api/user"
         r = requests.get(
-            self.settings['user_url'],
-            headers={'Authorization': f'token {token}'},
+            self.settings["user_url"],
+            headers={"Authorization": f"token {token}"},
         )
         if r.ok:
             return r.json()
@@ -764,6 +772,7 @@ class DownloadReleaseAssignment(MyRequestHandler):
         assignment = Assignment(assignment_id, course)
         files = self.get_argument("files", None)
         self.json_files_unpack(files, assignment.files)
+        self.db.add(assignment)
         self.db.commit()
         self.json_success()
 
@@ -835,6 +844,7 @@ class SubmitAssignment(MyRequestHandler):
         submission = Submission(self.user, assignment)
         files = self.get_body_argument("files", None)
         self.json_files_unpack(files, submission.files)
+        self.db.add(submission)
         self.db.commit()
         self.json_success(timestamp=self.strftime(submission.timestamp))
 
@@ -1009,26 +1019,26 @@ class MyApplication(Application):
                 prefix + "feedback/([^/]+)/([^/]+)/([^/]+)",
                 UploadDownloadFeedback,
             ),
-            (prefix + 'initialize-Data6ase', InitDatabase),
-            (prefix + 'oauth_callback', JupyterHubLoginHandler),
-            (prefix + 'healthz', HealthCheckHandler),
-            ('/healthz', HealthCheckHandler),
+            (prefix + "initialize-Data6ase", InitDatabase),
+            (prefix + "oauth_callback", JupyterHubLoginHandler),
+            (prefix + "healthz", HealthCheckHandler),
+            ("/healthz", HealthCheckHandler),
         ]
-        hub_api = os.environ['JUPYTERHUB_API_URL'].rstrip('/')
-        authorize_url = hub_api + '/oauth2/authorize'
-        token_url = hub_api + '/oauth2/token'
-        user_url = hub_api + '/user'
-        handlers.append((r'.*', NotFoundHandler))
+        hub_api = os.environ["JUPYTERHUB_API_URL"].rstrip("/")
+        authorize_url = hub_api + "/oauth2/authorize"
+        token_url = hub_api + "/oauth2/token"
+        user_url = hub_api + "/user"
+        handlers.append((r".*", NotFoundHandler))
         super(MyApplication, self).__init__(
             handlers,
             debug=debug,
             autoreload=autoreload,
             cookie_secret=os.urandom(32),
-            login_url='/oauth_callback',
-            api_token=os.environ['JUPYTERHUB_API_TOKEN'],
-            client_id=os.environ['JUPYTERHUB_CLIENT_ID'],
-            redirect_uri=os.environ['JUPYTERHUB_SERVICE_PREFIX'].rstrip('/')
-            + '/oauth_callback',
+            login_url="/oauth_callback",
+            api_token=os.environ["JUPYTERHUB_API_TOKEN"],
+            client_id=os.environ["JUPYTERHUB_CLIENT_ID"],
+            redirect_uri=os.environ["JUPYTERHUB_SERVICE_PREFIX"].rstrip("/")
+            + "/oauth_callback",
             authorize_url=authorize_url,
             token_url=token_url,
             user_url=user_url,
@@ -1058,8 +1068,8 @@ class MockAuth:
         return "token"
 
     def user_for_token(self, _):
-        if type(self).__name__ in ('HomePage', 'Static', 'InitDatabase'):
-            user = self.get_argument('user', 'user')
+        if type(self).__name__ in ("HomePage", "Static", "InitDatabase"):
+            user = self.get_argument("user", "user")
         else:
             user = self.get_argument("user")
         return {"name": user}
