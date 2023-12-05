@@ -6,9 +6,9 @@ from traitlets import Unicode
 
 class SUIDSimpleLocalProcessSpawner(LocalProcessSpawner):
     home_path_template = Unicode(
-        '/tmp/{userid}',
+        "/tmp/{userid}",
         config=True,
-        help='Template to expand to set the user home. {userid} and {username} are expanded',
+        help="Template to expand to set the user home. {userid} and {username} are expanded",
     )
 
     @property
@@ -32,21 +32,21 @@ class SUIDSimpleLocalProcessSpawner(LocalProcessSpawner):
         return preexec
 
     def user_env(self, env):
-        env['USER'] = self.user.name
-        env['HOME'] = self.home_path
-        env['SHELL'] = '/bin/bash'
+        env["USER"] = self.user.name
+        env["HOME"] = self.home_path
+        env["SHELL"] = "/bin/bash"
         return env
 
 
 c.JupyterHub.authenticator_class = DummyAuthenticator
 c.JupyterHub.spawner_class = SUIDSimpleLocalProcessSpawner
 
-c.Authenticator.admin_users = {'rkevin'}
+c.Authenticator.admin_users = {"rkevin"}
 
 c.JupyterHub.services.append(
     {
-        'name': 'ngshare',
-        'url': 'http://127.0.0.1:10101',
-        'command': [sys.executable, '/ngshare/ngshare.py', '--debug'],
+        "name": "ngshare",
+        "url": "http://127.0.0.1:10101",
+        "command": [sys.executable, "/ngshare/ngshare.py", "--debug"],
     }
 )

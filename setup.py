@@ -5,13 +5,13 @@ import os.path
 
 def read(rel_path):
     here = os.path.abspath(os.path.dirname(__file__))
-    with codecs.open(os.path.join(here, rel_path), 'r') as fp:
+    with codecs.open(os.path.join(here, rel_path), "r") as fp:
         return fp.read()
 
 
 def get_version(rel_path):
     for line in read(rel_path).splitlines():
-        if line.startswith('__version__'):
+        if line.startswith("__version__"):
             delim = '"' if '"' in line else "'"
             return line.split(delim)[1]
     else:
@@ -23,7 +23,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ngshare",
-    version=get_version('ngshare/version.py'),
+    version=get_version("ngshare/version.py"),
     author="Team KALE",
     author_email="ercli@ucdavis.edu",
     description="nbgrader sharing service",
@@ -37,14 +37,13 @@ setuptools.setup(
         "License :: OSI Approved :: BSD License",
         "Operating System :: POSIX :: Linux",
     ],
-    python_requires='>=3.6',
+    python_requires=">=3.6",
     install_requires=[
-        'SQLAlchemy>=1.3.12',
-        'alembic>=1.3.2',
-        'tornado>=6.0.3',
-        'jupyterhub>=1.1.0',
-        'sqlalchemy-utils',
-        'psycopg2-binary'
-
+        "SQLAlchemy>=1.3.12",
+        "alembic>=1.3.2",
+        "tornado>=6.0.3",
+        "jupyterhub>=1.1.0",
+        "sqlalchemy-utils",
+        "psycopg2-binary",
     ],
 )

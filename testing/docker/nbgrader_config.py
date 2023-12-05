@@ -12,4 +12,4 @@ c.ExchangeFactory.list = ngshare.ExchangeList
 c.ExchangeFactory.submit = ngshare.ExchangeSubmit
 c.ExchangeFactory.collect = ngshare.ExchangeCollect
 
-c.NbGrader.logfile = '/tmp/nbgrader.log'
+c.NbGrader.logfile = "/tmp/nbgrader.log"

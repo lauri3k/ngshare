@@ -1,8 +1,8 @@
 c.JupyterHub.services.append(
     {
-        'name': 'ngshare',
-        'url': 'http://127.0.0.1:10101',
-        'command': ['python3', '-m', 'ngshare', '--admins', 'admin,admin2'],
+        "name": "ngshare",
+        "url": "http://127.0.0.1:10101",
+        "command": ["python3", "-m", "ngshare", "--admins", "admin,admin2"],
     }
 )
 
@@ -16,9 +16,9 @@ from traitlets import Unicode
 
 class SUIDSimpleLocalProcessSpawner(LocalProcessSpawner):
     home_path_template = Unicode(
-        '/tmp/{userid}',
+        "/tmp/{userid}",
         config=True,
-        help='Template to expand to set the user home. {userid} and {username} are expanded',
+        help="Template to expand to set the user home. {userid} and {username} are expanded",
     )
 
     @property
@@ -42,9 +42,9 @@ class SUIDSimpleLocalProcessSpawner(LocalProcessSpawner):
         return preexec
 
     def user_env(self, env):
-        env['USER'] = self.user.name
-        env['HOME'] = self.home_path
-        env['SHELL'] = '/bin/bash'
+        env["USER"] = self.user.name
+        env["HOME"] = self.home_path
+        env["SHELL"] = "/bin/bash"
         return env
 
 

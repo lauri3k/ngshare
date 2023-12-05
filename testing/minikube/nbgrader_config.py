@@ -18,4 +18,4 @@ except e:
     print("Failed to set exchange service.")
     print(e)
 
-c.NbGrader.logfile = '/tmp/nbgrader.log'
+c.NbGrader.logfile = "/tmp/nbgrader.log"

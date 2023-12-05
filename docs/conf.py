@@ -19,27 +19,28 @@ import os.path
 
 # -- Project information -----------------------------------------------------
 
-project = 'ngshare'
-copyright = '2020, Team KALE'
-author = 'Team KALE'
+project = "ngshare"
+copyright = "2020, Team KALE"
+author = "Team KALE"
+
 
 # The full version, including alpha/beta/rc tags
 def read(rel_path):
     here = os.path.abspath(os.path.dirname(__file__))
-    with codecs.open(os.path.join(here, rel_path), 'r') as fp:
+    with codecs.open(os.path.join(here, rel_path), "r") as fp:
         return fp.read()
 
 
 def get_version(rel_path):
     for line in read(rel_path).splitlines():
-        if line.startswith('__version__'):
+        if line.startswith("__version__"):
             delim = '"' if '"' in line else "'"
             return line.split(delim)[1]
     else:
         raise RuntimeError("Unable to find version string.")
 
 
-release = get_version('../ngshare/version.py')
+release = get_version("../ngshare/version.py")
 
 # -- General configuration ---------------------------------------------------
 
@@ -47,17 +48,17 @@ release = get_version('../ngshare/version.py')
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinxcontrib.tikz',
-    'sphinx_rtd_theme',
+    "sphinxcontrib.tikz",
+    "sphinx_rtd_theme",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -66,19 +67,19 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # a list of builtin themes.
 #
 # html_theme = 'alabaster'
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = []
 
-master_doc = 'index'
+master_doc = "index"
 
 # -- Options for LaTeX output -------------------------------------------------
 
 latex_elements = {
-    'preamble': r'\usepackage{tikz}',
+    "preamble": r"\usepackage{tikz}",
 }
 
-tikz_proc_suite = 'GhostScript'
+tikz_proc_suite = "GhostScript"

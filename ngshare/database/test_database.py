@@ -1,6 +1,6 @@
-'''
+"""
     Test database structure and some properties of SQLAlchemy
-'''
+"""
 
 import os
 import shutil
@@ -18,13 +18,13 @@ from .database import *
 
 
 def clear_db(db, storage_path):
-    'Remove all data from database'
+    "Remove all data from database"
     for table_name in [
-        'assignment_files_assoc_table',
-        'submission_files_assoc_table',
-        'feedback_files_assoc_table',
+        "assignment_files_assoc_table",
+        "submission_files_assoc_table",
+        "feedback_files_assoc_table",
     ]:
-        db.execute('DELETE FROM %s' % table_name)
+        db.execute("DELETE FROM %s" % table_name)
     db.query(InstructorAssociation).delete()
     db.query(StudentAssociation).delete()
     db.query(Submission).delete()
@@ -32,7 +32,7 @@ def clear_db(db, storage_path):
     db.query(File).delete()
     db.query(Course).delete()
     db.query(User).delete()
-    
+
     db.commit()
     if storage_path is not None:
         shutil.rmtree(storage_path, ignore_errors=True)
@@ -50,19 +50,19 @@ def init_db(db, storage_path):
         student = [eric]
         assignments = [assignment2a, assignment2b] (no submissions)
     """
-    uk = User('kevin')
-    ua = User('abigail')
-    ul = User('lawrence')
-    ue = User('eric')
-    course1 = Course('course1', [uk])
-    course2 = Course('course2', [ua])
+    uk = User("kevin")
+    ua = User("abigail")
+    ul = User("lawrence")
+    ue = User("eric")
+    course1 = Course("course1", [uk])
+    course2 = Course("course2", [ua])
     db.add(course1)
     db.add(course2)
     course1.students.append(ul)
     course2.students.append(ue)
-    aa = Assignment('assignment2a', course2)
-    ab = Assignment('assignment2b', course2)
-    ac = Assignment('challenge', course1)
+    aa = Assignment("assignment2a", course2)
+    ab = Assignment("assignment2b", course2)
+    ac = Assignment("challenge", course1)
     db.add(aa)
     db.add(ab)
     db.add(ac)
@@ -71,22 +71,22 @@ def init_db(db, storage_path):
     s1.timestamp = datetime.datetime(2020, 1, 1, 0, 0, 0, 0)
     db.add(s1)
     db.add(s2)
-    aa.files.append(File('file0', b'00000', 'actual0'))
-    ab.files.append(File('file1', b'11111', 'actual1'))
-    ac.files.append(File('file2', b'22222', 'actual2'))
-    s1.files.append(File('file3', b'33333', 'actual3'))
-    s2.files.append(File('file4', b'44444', 'actual4'))
-    s1.feedbacks.append(File('file5', b'55555', 'actual5'))
+    aa.files.append(File("file0", b"00000", "actual0"))
+    ab.files.append(File("file1", b"11111", "actual1"))
+    ac.files.append(File("file2", b"22222", "actual2"))
+    s1.files.append(File("file3", b"33333", "actual3"))
+    s2.files.append(File("file4", b"44444", "actual4"))
+    s1.feedbacks.append(File("file5", b"55555", "actual5"))
     os.makedirs(storage_path, exist_ok=True)
     for i in range(6):
-        f = open(os.path.join(storage_path, 'actual%d' % i), 'wb')
-        f.write((b'%d' % i) * 5)
+        f = open(os.path.join(storage_path, "actual%d" % i), "wb")
+        f.write((b"%d" % i) * 5)
         f.close()
     db.commit()
 
 
 def dump_db(db):
-    'Dump database out'
+    "Dump database out"
     ans = defaultdict(list)
     for table in (
         User,
@@ -107,17 +107,17 @@ def dump_db(db):
         for i in db.query(table).all():
             ans[table.name].append(
                 {
-                    'left_id': i.left_id,
-                    'right_id': i.right_id,
+                    "left_id": i.left_id,
+                    "right_id": i.right_id,
                 }
             )
     return ans
 
 
 def test_legacy():
-    'Some test cases created when building database structure'
+    "Some test cases created when building database structure"
     global Session
-    engine = create_engine('sqlite://')  # temp database in memory
+    engine = create_engine("sqlite://")  # temp database in memory
     Base.metadata.bind = engine
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
@@ -156,7 +156,7 @@ def test_legacy():
 
 
 def test_init():
-    'Test clearing database and fill in default test data'
+    "Test clearing database and fill in default test data"
     global Session, test_storage
     test_storage = tempfile.mkdtemp()
     db = Session()
@@ -179,15 +179,15 @@ def test_init():
     assert len(db.query(Submission).all()) == 2
     assert len(db.query(File).all()) == 6
     dumped = dump_db(db)
-    assert len(dumped['users']) == 4
-    assert len(dumped['courses']) == 2
-    assert len(dumped['assignments']) == 3
-    assert len(dumped['submissions']) == 2
-    assert len(dumped['files']) == 6
+    assert len(dumped["users"]) == 4
+    assert len(dumped["courses"]) == 2
+    assert len(dumped["assignments"]) == 3
+    assert len(dumped["submissions"]) == 2
+    assert len(dumped["files"]) == 6
 
 
 def test_upload_feedback():
-    'When uploading feedback, old feedbacks need to be removed'
+    "When uploading feedback, old feedbacks need to be removed"
     global Session
     db = Session()
     ts = datetime.datetime(2020, 1, 1, 0, 0, 0, 0)
@@ -202,10 +202,10 @@ def test_upload_feedback():
 
 
 def test_remove_assignment():
-    'Test when removing assignment, submissions and files need to be removed'
+    "Test when removing assignment, submissions and files need to be removed"
     global Session
     db = Session()
-    ac = db.query(Assignment).filter(Assignment.id == 'challenge').one_or_none()
+    ac = db.query(Assignment).filter(Assignment.id == "challenge").one_or_none()
     assert ac is not None
     ac.delete(db)
     db.commit()
@@ -215,14 +215,14 @@ def test_remove_assignment():
 
 
 def test_instructor_association():
-    'Test instructor association table'
+    "Test instructor association table"
     global Session
     db = Session()
-    kevin = db.query(User).filter_by(id='kevin').one_or_none()
-    assert kevin.id == 'kevin'
+    kevin = db.query(User).filter_by(id="kevin").one_or_none()
+    assert kevin.id == "kevin"
     assert len(kevin.teaching) == 1
     course1 = kevin.teaching[0]
-    assert course1.id == 'course1'
+    assert course1.id == "course1"
     relation_count = len(db.query(InstructorAssociation).all())
     # Check relation
     kevin.teaching.remove(kevin.teaching[0])
@@ -238,25 +238,25 @@ def test_instructor_association():
     assert association.first_name is None
     assert association.last_name is None
     assert association.email is None
-    association.first_name = 'Kevin.first_name'
-    association.last_name = 'Kevin.last_name'
-    association.email = 'Kevin.email'
+    association.first_name = "Kevin.first_name"
+    association.last_name = "Kevin.last_name"
+    association.email = "Kevin.email"
     db.commit()
     association = InstructorAssociation.find(db, kevin, course1)
-    assert association.first_name == 'Kevin.first_name'
-    assert association.last_name == 'Kevin.last_name'
-    assert association.email == 'Kevin.email'
+    assert association.first_name == "Kevin.first_name"
+    assert association.last_name == "Kevin.last_name"
+    assert association.email == "Kevin.email"
 
 
 def test_student_association():
-    'Test student association table'
+    "Test student association table"
     global Session
     db = Session()
-    lawrence = db.query(User).filter_by(id='lawrence').one_or_none()
-    assert lawrence.id == 'lawrence'
+    lawrence = db.query(User).filter_by(id="lawrence").one_or_none()
+    assert lawrence.id == "lawrence"
     assert len(lawrence.taking) == 1
     course1 = lawrence.taking[0]
-    assert course1.id == 'course1'
+    assert course1.id == "course1"
     relation_count = len(db.query(StudentAssociation).all())
     # Check relation
     lawrence.taking.remove(lawrence.taking[0])
@@ -272,18 +272,18 @@ def test_student_association():
     assert association.first_name is None
     assert association.last_name is None
     assert association.email is None
-    association.first_name = 'Lawrence.first_name'
-    association.last_name = 'Lawrence.last_name'
-    association.email = 'Lawrence.email'
+    association.first_name = "Lawrence.first_name"
+    association.last_name = "Lawrence.last_name"
+    association.email = "Lawrence.email"
     db.commit()
     association = StudentAssociation.find(db, lawrence, course1)
-    assert association.first_name == 'Lawrence.first_name'
-    assert association.last_name == 'Lawrence.last_name'
-    assert association.email == 'Lawrence.email'
+    assert association.first_name == "Lawrence.first_name"
+    assert association.last_name == "Lawrence.last_name"
+    assert association.email == "Lawrence.email"
 
 
 def test_notimpl():
-    'Test not implemented functions'
+    "Test not implemented functions"
     global Session
     db = Session()
     try:
@@ -293,16 +293,16 @@ def test_notimpl():
 
 
 def test_print():
-    'Test __str__ functions'
+    "Test __str__ functions"
     global Session
     db = Session()
     clear_db(db, None)
     init_db(db, test_storage)
-    assert str(db.query(User).first()).startswith('<User')
-    assert str(db.query(Course).first()).startswith('<Course')
-    assert str(db.query(Assignment).first()).startswith('<Assignment')
-    assert str(db.query(Submission).first()).startswith('<Submission')
-    assert str(db.query(File).first()).startswith('<File')
+    assert str(db.query(User).first()).startswith("<User")
+    assert str(db.query(Course).first()).startswith("<Course")
+    assert str(db.query(Assignment).first()).startswith("<Assignment")
+    assert str(db.query(Submission).first()).startswith("<Submission")
+    assert str(db.query(File).first()).startswith("<File")
 
 
 def test_remove_course():
@@ -311,20 +311,20 @@ def test_remove_course():
     for course in db.query(Course).all():
         course.delete(db)
     a = dump_db(db)
-    assert list(dump_db(db)) == ['users']
+    assert list(dump_db(db)) == ["users"]
 
 
 def test_jhub_user():
     global Session
     db = Session()
-    user_model = {'name': 'eric'}
-    assert str(User.from_jupyterhub_user(user_model, db)) == '<User eric>'
-    user_model = {'name': 'new_usr'}
-    assert str(User.from_jupyterhub_user(user_model, db)) == '<User new_usr>'
+    user_model = {"name": "eric"}
+    assert str(User.from_jupyterhub_user(user_model, db)) == "<User eric>"
+    user_model = {"name": "new_usr"}
+    assert str(User.from_jupyterhub_user(user_model, db)) == "<User new_usr>"
 
 
 def test_clean():
-    'Clean test space'
+    "Clean test space"
     global Session
     db = Session()
     clear_db(db, test_storage)

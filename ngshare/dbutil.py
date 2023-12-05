@@ -12,10 +12,10 @@ import argparse
 
 _here = os.path.abspath(os.path.dirname(__file__))
 
-ALEMBIC_INI_TEMPLATE_PATH = os.path.join(_here, 'alembic.ini')
-ALEMBIC_DIR = os.path.join(_here, 'alembic')
+ALEMBIC_INI_TEMPLATE_PATH = os.path.join(_here, "alembic.ini")
+ALEMBIC_DIR = os.path.join(_here, "alembic")
 
-DEFAULT_DB = 'sqlite:////tmp/ngshare.db'
+DEFAULT_DB = "sqlite:////tmp/ngshare.db"
 
 
 def get_alembic_config(
@@ -32,7 +32,7 @@ def get_alembic_config(
     return config
 
 
-def upgrade(db_url: str = DEFAULT_DB, revision='head', cmd_opts=None):
+def upgrade(db_url: str = DEFAULT_DB, revision="head", cmd_opts=None):
     """Upgrade the given database to revision.
     db_url: str [default: 'sqlite:////tmp/ngshare.db']
         The SQLAlchemy database url, e.g. `sqlite:///ngshare.db`.
@@ -51,5 +51,5 @@ def main(args: list, db_url: str = DEFAULT_DB):
     cl.run_cmd(get_alembic_config(db_url, options), options)
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     main(sys.argv[1:])
